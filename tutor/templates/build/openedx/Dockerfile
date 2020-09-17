@@ -27,28 +27,10 @@ RUN curl -L -o /tmp/dockerize.tar.gz https://github.com/jwilder/dockerize/releas
 
 ###### Checkout edx-platform code
 FROM minimal as code
-ARG EDX_PLATFORM_REPOSITORY=https://github.com/edx/edx-platform.git
-ARG EDX_PLATFORM_VERSION={{ OPENEDX_COMMON_VERSION }}
-RUN mkdir -p /openedx/edx-platform && \
-    git clone $EDX_PLATFORM_REPOSITORY --branch $EDX_PLATFORM_VERSION --depth 1 /openedx/edx-platform
+ARG EDX_PLATFORM_PATH={{ OPENEDX_COMMON_PATH }}
+RUN mkdir -p /openedx/edx-platform
+COPY $EDX_PLATFORM_PATH /openedx/edx-platform
 WORKDIR /openedx/edx-platform
-
-# Patch edx-platform
-# Get rid of lepl-related warnings
-# https://github.com/edx/edx-platform/pull/24059
-# https://github.com/overhangio/edx-platform/tree/overhangio/lepl-rfc6266-warning
-RUN curl https://github.com/overhangio/edx-platform/commit/5f21bbe77056d71ca61b97b6badcff3c1a31b858.patch | git apply -
-# Fix creation of LTI provider objects
-# https://github.com/edx/edx-platform/pull/24055
-# https://github.com/overhangio/edx-platform/tree/regisb/fix-lti-provider-admin
-RUN curl https://github.com/overhangio/edx-platform/commit/089b26eed0302ed1f9a5b24c5f3e563dd44abb04.patch | git apply -
-# Fix problem viewing when CSMH is disabled
-# https://github.com/edx/edx-platform/pull/24237
-# https://github.com/overhangio/edx-platform/tree/overhangio/fix-no-csmh
-RUN curl https://github.com/overhangio/edx-platform/commit/6dbf2eddf7a4563c04c3b51edf5e131106d69e19.patch | git apply -
-# Fix upload of video transcripts to s3
-# https://github.com/edx/edx-platform/pull/24800
-RUN curl https://github.com/edx/edx-platform/commit/80fa2cae128e2a1fd8ab298351b7b36c9d139e6c.patch | git apply -
 
 ###### Download extra locales to /openedx/locale/contrib/locale
 FROM minimal as locales
